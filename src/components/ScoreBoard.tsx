@@ -1,14 +1,28 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 const ScoreBoard = () => {
   const [scores, setScores] = useState({
     teamA: 5,
     teamB: 6
   });
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const logo = "/lovable-uploads/b7bf2987-fd40-411a-bc74-a5b638e54e50.png";
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-tournament-dark">
@@ -28,7 +42,20 @@ const ScoreBoard = () => {
               <h1 className="text-4xl md:text-6xl font-bold text-white">
                 LALITPUR HISSAN
               </h1>
-              <img src={logo} alt="Tournament Logo" className="w-20 md:w-32" />
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={toggleFullscreen}
+                  className="text-white hover:text-tournament-darker transition-colors"
+                  aria-label="Toggle fullscreen"
+                >
+                  {isFullscreen ? (
+                    <Minimize2 className="w-8 h-8" />
+                  ) : (
+                    <Maximize2 className="w-8 h-8" />
+                  )}
+                </button>
+                <img src={logo} alt="Tournament Logo" className="w-20 md:w-32" />
+              </div>
             </div>
             <h2 className="text-2xl md:text-3xl text-white mt-2">Live Score</h2>
           </div>
