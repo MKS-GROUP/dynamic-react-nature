@@ -879,7 +879,14 @@ const ScoreBoard = () => {
           >
             Next Game
           </button>
+          
         </div>
+         <button
+          onClick={() => window.location.href = '/home'}
+          className="mt-4 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-opacity-90"
+         >
+          Home
+         </button>
       </div>
 
       {/* Winner Popup - Click outside to close */}
