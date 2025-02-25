@@ -3,6 +3,9 @@ import { motion } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
+import { Link } from 'react-router-dom';
+
+
 
 
 
@@ -219,34 +222,7 @@ const ScoreBoard = () => {
             >
               Reset
             </button>
-            {/* <button
-              onClick={determineWinner}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
-            >
-              Win
-            </button> */}
-
-
-      {/* <button onClick={() => { handleConfetti(); determineWinner(); }} className='px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90'>Win</button> */}
-
-
-      {/* <button
-  onClick={() => {
-    handleConfetti();
-    determineWinner();
-    // Store winner in localStorage so the second page can detect it
-    localStorage.setItem('gameData', JSON.stringify({
-      gameStarted,
-      teamNames,
-      scores,
-      winner,
-    }));
-  }}
-  className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
->
-  Win
-</button> */}
-  
+           
 
 
   <button
@@ -299,7 +275,13 @@ const ScoreBoard = () => {
             <h2 className="text-6xl md:text-8xl font-extrabold">{winner}</h2>
           </motion.div>
         </div>
-      )}
+      )};
+      <Link
+        to="/home"
+        className="mt-4 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-opacity-90"
+      >
+        Home
+      </Link>
     </div>
   );
 };
