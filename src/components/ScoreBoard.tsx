@@ -143,6 +143,12 @@ const ScoreBoard = () => {
               -1
             </button>
             <button
+              onClick={() => updateScore('teamA', 1)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +1
+            </button>
+            <button
               onClick={() => updateScore('teamA', 2)}
               className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
             >
@@ -161,6 +167,12 @@ const ScoreBoard = () => {
               className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
             >
               -1
+            </button>
+            <button
+              onClick={() => updateScore('teamB', 1)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +1
             </button>
             <button
               onClick={() => updateScore('teamB', 2)}
