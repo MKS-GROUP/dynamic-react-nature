@@ -4,9 +4,14 @@ import { motion } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
 
 const ScoreBoard = () => {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [teamNames, setTeamNames] = useState({
+    teamA: '',
+    teamB: ''
+  });
   const [scores, setScores] = useState({
-    teamA: 5,
-    teamB: 6
+    teamA: 0,
+    teamB: 0
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -24,6 +29,63 @@ const ScoreBoard = () => {
       }
     }
   };
+
+  const updateScore = (team: 'teamA' | 'teamB', points: number) => {
+    setScores(prev => ({
+      ...prev,
+      [team]: Math.max(0, prev[team] + points)
+    }));
+  };
+
+  const handleStartGame = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (teamNames.teamA && teamNames.teamB) {
+      setGameStarted(true);
+    }
+  };
+
+  if (!gameStarted) {
+    return (
+      <div 
+        className="min-h-screen bg-cover bg-center bg-no-repeat relative flex items-center justify-center"
+        style={{
+          backgroundImage: `url(${backgroundFrame})`
+        }}
+      >
+        <form onSubmit={handleStartGame} className="bg-[#3d3935] p-8 rounded-lg w-[90%] max-w-md">
+          <h2 className="text-3xl text-white mb-6 font-bold">Enter Team Names</h2>
+          <div className="space-y-4">
+            <div>
+              <input
+                type="text"
+                value={teamNames.teamA}
+                onChange={(e) => setTeamNames(prev => ({ ...prev, teamA: e.target.value }))}
+                placeholder="Team A Name"
+                className="w-full p-3 rounded-lg bg-[#1a1a1a] text-white border border-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-[#FF8C00]"
+                required
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                value={teamNames.teamB}
+                onChange={(e) => setTeamNames(prev => ({ ...prev, teamB: e.target.value }))}
+                placeholder="Team B Name"
+                className="w-full p-3 rounded-lg bg-[#1a1a1a] text-white border border-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-[#FF8C00]"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all font-bold"
+            >
+              Start Game
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -44,49 +106,88 @@ const ScoreBoard = () => {
         )}
       </button>
 
-      <div className="absolute top-[60%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-7xl">
+      <div className="absolute top-[60%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <div className="grid grid-cols-2 gap-1 bg-[#1a1a1a] rounded-lg overflow-hidden">
           <div className="bg-[#3d3935] p-8 text-center">
-            <h3 className="text-2xl text-white mb-4">Team A</h3>
+            <h3 className="text-5xl text-white mb-4 font-extrabold">{teamNames.teamA}</h3>
             <motion.div 
               key={scores.teamA}
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 0.3 }}
-              className="text-8xl md:text-9xl font-bold text-white"
+              className="text-9xl md:text-[12rem] font-black text-white"
             >
               {String(scores.teamA).padStart(2, '0')}
             </motion.div>
           </div>
 
           <div className="bg-[#3d3935] p-8 text-center">
-            <h3 className="text-2xl text-white mb-4">Team B</h3>
+            <h3 className="text-5xl text-white mb-4 font-extrabold">{teamNames.teamB}</h3>
             <motion.div
               key={scores.teamB}
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 0.3 }}
-              className="text-8xl md:text-9xl font-bold text-white"
+              className="text-9xl md:text-[12rem] font-black text-white"
             >
               {String(scores.teamB).padStart(2, '0')}
             </motion.div>
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center gap-4">
-          <button
-            onClick={() => setScores(prev => ({ ...prev, teamA: prev.teamA + 1 }))}
-            className="px-6 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
-          >
-            Team A +1
-          </button>
-          <button
-            onClick={() => setScores(prev => ({ ...prev, teamB: prev.teamB + 1 }))}
-            className="px-6 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
-          >
-            Team B +1
-          </button>
-          
+        <div className="mt-8 grid grid-cols-2 gap-8">
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => updateScore('teamA', -1)}
+              className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              -1
+            </button>
+            <button
+              onClick={() => updateScore('teamA', 1)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +1
+            </button>
+            <button
+              onClick={() => updateScore('teamA', 2)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +2
+            </button>
+            <button
+              onClick={() => updateScore('teamA', 3)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +3
+            </button>
+          </div>
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => updateScore('teamB', -1)}
+              className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              -1
+            </button>
+            <button
+              onClick={() => updateScore('teamB', 1)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +1
+            </button>
+            <button
+              onClick={() => updateScore('teamB', 2)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +2
+            </button>
+            <button
+              onClick={() => updateScore('teamB', 3)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +3
+            </button>
+          </div>
         </div>
       </div>
     </div>
