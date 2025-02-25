@@ -108,26 +108,26 @@ const ScoreBoard = () => {
       <div className="absolute top-[60%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <div className="grid grid-cols-2 gap-1 bg-[#1a1a1a] rounded-lg overflow-hidden">
           <div className="bg-[#3d3935] p-8 text-center">
-            <h3 className="text-4xl text-white mb-4 font-bold">{teamNames.teamA}</h3>
+            <h3 className="text-5xl text-white mb-4 font-extrabold">{teamNames.teamA}</h3>
             <motion.div 
               key={scores.teamA}
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 0.3 }}
-              className="text-8xl md:text-9xl font-bold text-white"
+              className="text-9xl md:text-[12rem] font-black text-white"
             >
               {String(scores.teamA).padStart(2, '0')}
             </motion.div>
           </div>
 
           <div className="bg-[#3d3935] p-8 text-center">
-            <h3 className="text-4xl text-white mb-4 font-bold">{teamNames.teamB}</h3>
+            <h3 className="text-5xl text-white mb-4 font-extrabold">{teamNames.teamB}</h3>
             <motion.div
               key={scores.teamB}
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 0.3 }}
-              className="text-8xl md:text-9xl font-bold text-white"
+              className="text-9xl md:text-[12rem] font-black text-white"
             >
               {String(scores.teamB).padStart(2, '0')}
             </motion.div>
