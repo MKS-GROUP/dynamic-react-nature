@@ -25,6 +25,13 @@ const ScoreBoard = () => {
     }
   };
 
+  const updateScore = (team: 'teamA' | 'teamB', points: number) => {
+    setScores(prev => ({
+      ...prev,
+      [team]: Math.max(0, prev[team] + points) // Prevent negative scores
+    }));
+  };
+
   return (
     <div 
       className="min-h-screen bg-cover bg-center bg-no-repeat relative"
@@ -44,7 +51,7 @@ const ScoreBoard = () => {
         )}
       </button>
 
-      <div className="absolute top-[70%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl">
+      <div className="absolute top-[70%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <div className="grid grid-cols-2 gap-1 bg-[#1a1a1a] rounded-lg overflow-hidden">
           <div className="bg-[#3d3935] p-8 text-center">
             <h3 className="text-2xl text-white mb-4">Team A</h3>
@@ -73,19 +80,47 @@ const ScoreBoard = () => {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center gap-4">
-          <button
-            onClick={() => setScores(prev => ({ ...prev, teamA: prev.teamA + 1 }))}
-            className="px-6 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
-          >
-            Team A +1
-          </button>
-          <button
-            onClick={() => setScores(prev => ({ ...prev, teamB: prev.teamB + 1 }))}
-            className="px-6 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
-          >
-            Team B +1
-          </button>
+        <div className="mt-8 grid grid-cols-2 gap-8">
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => updateScore('teamA', -1)}
+              className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              -1
+            </button>
+            <button
+              onClick={() => updateScore('teamA', 2)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +2
+            </button>
+            <button
+              onClick={() => updateScore('teamA', 3)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +3
+            </button>
+          </div>
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => updateScore('teamB', -1)}
+              className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              -1
+            </button>
+            <button
+              onClick={() => updateScore('teamB', 2)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +2
+            </button>
+            <button
+              onClick={() => updateScore('teamB', 3)}
+              className="px-4 py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all"
+            >
+              +3
+            </button>
+          </div>
         </div>
       </div>
     </div>
