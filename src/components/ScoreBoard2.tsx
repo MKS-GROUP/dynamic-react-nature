@@ -822,7 +822,7 @@ const ScoreBoard = () => {
         {isFullscreen ? <Minimize2 className="w-8 h-8" /> : <Maximize2 className="w-8 h-8" />}
       </button>
 
-      <div className="absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
+      <div className="absolute top-[55%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <div className="grid grid-cols-2 gap-2 bg-[#1a1a1a] rounded-lg overflow-hidden">
           {['teamA', 'teamB'].map((team) => (
             <div key={team} className="bg-[#3d3935] p-4 text-center">
@@ -841,7 +841,7 @@ const ScoreBoard = () => {
         </div>
 
         {/* Score Buttons */}
-        <div className="mt-8 grid grid-cols-2 gap-8">
+        {/* <div className="mt-8 grid grid-cols-2 gap-8">
           {['teamA', 'teamB'].map((team) => (
             <div key={team} className="flex justify-center gap-2">
               {[-1, 1, 2, 3].map((points) => (
@@ -855,10 +855,10 @@ const ScoreBoard = () => {
               ))}
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* Reset, Win, Next Game Buttons */}
-        <div className="mt-8 flex flex-col items-center gap-4">
+        {/* <div className="mt-8 flex flex-col items-center gap-4">
           <div className="flex gap-4">
             <button
               onClick={() => setScores({ teamA: 0, teamB: 0 })}
@@ -879,11 +879,11 @@ const ScoreBoard = () => {
           >
             Next Game
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Winner Popup - Click outside to close */}
-      {winner && (
+      {/* {winner && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70"
           onClick={() => setWinner(null)} // Close when clicking outside
@@ -898,7 +898,7 @@ const ScoreBoard = () => {
             <h2 className="text-6xl md:text-8xl font-extrabold">{winner}</h2>
           </motion.div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
