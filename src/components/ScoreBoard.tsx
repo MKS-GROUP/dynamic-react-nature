@@ -51,7 +51,7 @@ const ScoreBoard = () => {
         )}
       </button>
 
-      <div className="absolute top-[70%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
+      <div className="absolute top-[60%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <div className="grid grid-cols-2 gap-1 bg-[#1a1a1a] rounded-lg overflow-hidden">
           <div className="bg-[#3d3935] p-8 text-center">
             <h3 className="text-2xl text-white mb-4">Team A</h3>
