@@ -10,6 +10,7 @@ const ScoreBoard = () => {
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const logo = "/lovable-uploads/b7bf2987-fd40-411a-bc74-a5b638e54e50.png";
   const backgroundFrame = "/lovable-uploads/499c5578-5601-4c64-a518-93c9507be712.png";
 
   const toggleFullscreen = () => {
