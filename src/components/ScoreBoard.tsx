@@ -149,6 +149,64 @@ const ScoreBoard = () => {
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${backgroundFrame})` }}>
+      {winner && (
+        <div
+          className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30"
+          onClick={() => setWinner(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-12 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[90%] max-w-3xl border-4 border-yellow-400"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0ic3RhciIgdmlld0JveD0iMCAwIDEwIDEwIiB3aWR0aD0iMTAlIiBoZWlnaHQ9IjEwJSI+PHBvbHlnb24gcG9pbnRzPSI1LDAgNi40NywzLjUzIDEwLDQuMDggNy41LDYuODQgOC4wOSwxMCA1LDguNTMgMS45MSwxMCAyLjUsNi44NCAwLDQuMDggMy41MywzLjUzIiBmaWxsPSJyZ2JhKDI1NSwyMTUsMCwwLjEpIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3N0YXIpIi8+PC9zdmc+')] opacity-30" />
+            
+            <motion.div 
+              className="text-yellow-400 text-8xl mb-6"
+              animate={{ 
+                y: [0, -20, 0],
+                rotateZ: [0, -10, 10, 0]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+            >
+              🏆
+            </motion.div>
+
+            <motion.h2 
+              className="text-5xl font-black text-white mb-4 relative"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              Congratulations!
+            </motion.h2>
+
+            <motion.p 
+              className="text-7xl font-black bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 text-transparent bg-clip-text mt-4"
+              initial={{ y: 20 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              {winner}
+            </motion.p>
+
+            <motion.button
+              className="mt-8 px-8 py-3 bg-yellow-400 text-purple-900 rounded-full font-bold text-lg hover:bg-yellow-300 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setWinner(null)}
+            >
+              Continue Playing
+            </motion.button>
+          </motion.div>
+        </div>
+      )}
+
       {winner && winner !== "It's a Tie!" && (
         <>
           <Confetti width={window.innerWidth} height={window.innerHeight} />
@@ -234,32 +292,6 @@ const ScoreBoard = () => {
           </button>
         </div>
       </div>
-
-      {winner && (
-        <div
-          className="fixed inset-0 flex items-center justify-center "
-          onClick={() => setWinner(null)}
-        >
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="bg-white p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[80%] max-w-3xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <motion.div 
-              className="text-yellow-400 text-7xl mb-4"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
-            >
-              🏆
-            </motion.div>
-
-            <h2 className="text-4xl font-extrabold text-indigo-600">Congratulations!</h2>
-            <p className="text-7xl font-extrabold text-gray-700 mt-2">{winner}</p>
-          </motion.div>
-        </div>
-      )}
 
       <Link
         to="/home"
