@@ -29,6 +29,7 @@ const ScoreBoard = () => {
       setWinner(parsedData.winner);
     }
   }, []);
+  
 
   // Save the game data to localStorage
   useEffect(() => {
@@ -96,6 +97,7 @@ const ScoreBoard = () => {
       setWinner("It's a Tie!");
     }
   };
+  
 
   
 
@@ -158,6 +160,9 @@ const ScoreBoard = () => {
           origin: { y: 0.6 }
         });
       }
+
+
+      
     
 
   return (
@@ -259,23 +264,47 @@ const ScoreBoard = () => {
       
       </div>
 
-      {/* Winner Popup - Click outside to close */}
-      {winner && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70"
-          onClick={() => setWinner(null)} // Close when clicking outside
-        >
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="bg-white text-black p-10 rounded-lg text-center shadow-2xl w-[80%] max-w-4xl"
-            onClick={(e) => e.stopPropagation()} // Prevent click inside from closing
-          >
-            <h2 className="text-6xl md:text-8xl font-extrabold">{winner}</h2>
-          </motion.div>
-        </div>
-      )};
+{winner && (
+  <div
+    className="fixed inset-0 flex items-center justify-center "
+    onClick={() => setWinner(null)}
+  >
+    <motion.div
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="bg-white p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[80%] max-w-3xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Sparkles */}
+      {/* <motion.div 
+        className="absolute top-0 left-1/2 transform -translate-x-1/2 text-yellow-400 text-3xl"
+        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 1.2, repeat: Infinity, repeatType: "reverse" }}
+      >
+        ✨✨✨
+      </motion.div> */}
+
+      {/* Trophy */}
+      <motion.div 
+        className="text-yellow-400 text-7xl mb-4"
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
+      >
+        🏆
+      </motion.div>
+
+      <h2 className="text-4xl font-extrabold text-indigo-600">Congratulations!</h2>
+      <p className="text-7xl font-extrabold text-gray-700 mt-2">{winner}</p>
+
+      {/* Claim Prize Button */}
+     
+    </motion.div>
+  </div>
+)};
+
+
+
       <Link
         to="/home"
         className="mt-4 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-opacity-90"

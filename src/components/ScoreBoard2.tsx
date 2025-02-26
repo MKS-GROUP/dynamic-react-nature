@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
-import { s } from 'node_modules/framer-motion/dist/types.d-6pKw1mTI';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -127,14 +126,16 @@ const ScoreBoard = () => {
     );
   }
 
+  
+
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${backgroundFrame})` }}>
       {winner && winner !== "It's a Tie!" && <Confetti width={window.innerWidth} height={window.innerHeight} />}
       <button onClick={toggleFullscreen} className="absolute top-4 right-4 text-white hover:text-gray-200">
-        {isFullscreen ? <Minimize2 className="w-8 h-8" /> : <Maximize2 className="w-8 h-8" />}
+      {isFullscreen ? <Minimize2 className="w-8 h-8 text" /> : <Maximize2 className="w-8 h-8" />}
       </button>
-      <div className="absolute top-[56%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
-        <ScoreTable teamNames={teamNames} scores={scores} winner={winner} setWinner={setWinner} />
+      <div className="absolute top-[58%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
+      <ScoreTable teamNames={teamNames} scores={scores} winner={winner} setWinner={setWinner} />
       </div>
     </div>
   );
@@ -161,7 +162,7 @@ const ScoreTable = ({ teamNames, scores, winner, setWinner }: { teamNames: { tea
       ))}
 
       {/* Winner Popup - Click outside to close */}
-      {winner && (
+      {/* {winner && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70"
           onClick={() => setWinner(null)} // Close when clicking outside
@@ -176,7 +177,37 @@ const ScoreTable = ({ teamNames, scores, winner, setWinner }: { teamNames: { tea
             <h2 className="text-6xl md:text-8xl font-extrabold">{winner}</h2>
           </motion.div>
         </div>
-      )}
+      )} */}
+
+{winner && (
+  <div
+    className="fixed inset-0 flex items-center justify-center "
+    onClick={() => setWinner(null)}
+  >
+    <motion.div
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="bg-white p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[80%] max-w-3xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <motion.div 
+        className="text-yellow-400 text-7xl mb-4"
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
+      >
+        🏆
+      </motion.div>
+
+      <h2 className="text-5xl font-extrabold text-indigo-600">Congratulations!</h2>
+      <p className="text-7xl font-extrabold text-gray-700 mt-2">{winner}</p>
+
+      {/* Claim Prize Button */}
+     
+    </motion.div>
+  </div>
+)};
     </div>
   );
 };
