@@ -3,6 +3,17 @@ import { useEffect } from 'react';
 
 const Fireworks = () => {
   useEffect(() => {
+    // Create a fixed container for fireworks
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '1000';
+    document.body.appendChild(container);
+
     const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
 
     const createFirework = (x: number, y: number) => {
@@ -29,7 +40,7 @@ const Fireworks = () => {
         particle.style.left = `${x}px`;
         particle.style.top = `${y}px`;
 
-        document.body.appendChild(particle);
+        container.appendChild(particle);
 
         particle.addEventListener('animationend', () => {
           particle.remove();
@@ -47,7 +58,7 @@ const Fireworks = () => {
       rising.style.left = `${startX}px`;
       rising.style.top = `${window.innerHeight}px`;
 
-      document.body.appendChild(rising);
+      container.appendChild(rising);
 
       const duration = 1000 + Math.random() * 500;
       let startTime: number | null = null;
@@ -80,8 +91,8 @@ const Fireworks = () => {
 
     return () => {
       clearInterval(interval);
-      // Clean up any remaining particles and rising elements
-      document.querySelectorAll('.particle, .rising').forEach(el => el.remove());
+      // Clean up the container and all its children
+      container.remove();
     };
   }, []);
 
