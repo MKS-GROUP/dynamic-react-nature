@@ -142,8 +142,19 @@ const ScoreBoard = () => {
 
 // ScoreTable Component that updates every second
 const ScoreTable = ({ teamNames, scores, winner, setWinner }: { teamNames: { teamA: string, teamB: string }, scores: { teamA: number, teamB: number }, winner: string | null, setWinner: (winner: string | null) => void }) => {
+  const handleWinnerClose = () => {
+    if (winner && winner !== "It's a Tie!") {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+    setWinner(null);
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-2  rounded-lg overflow-hidden">
+    <div className="grid grid-cols-2 gap-2 rounded-lg overflow-hidden">
       {['teamA', 'teamB'].map((team) => (
         <div key={team} className="bg-[#3d3935] p-8 text-center">
           <h3 className="text-6xl text-white mb-4 font-extrabold">{teamNames[team]}</h3>
@@ -164,14 +175,14 @@ const ScoreTable = ({ teamNames, scores, winner, setWinner }: { teamNames: { tea
       {winner && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70"
-          onClick={() => setWinner(null)} // Close when clicking outside
+          onClick={handleWinnerClose}
         >
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.4 }}
             className="bg-white text-black p-10 rounded-lg text-center shadow-2xl w-[80%] max-w-4xl"
-            onClick={(e) => e.stopPropagation()} // Prevent click inside from closing
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-6xl md:text-8xl font-extrabold">{winner}</h2>
           </motion.div>
