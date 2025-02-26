@@ -136,7 +136,7 @@ const ScoreBoard = () => {
       <button onClick={toggleFullscreen} className="absolute top-4 right-4 text-white hover:text-gray-200">
         {isFullscreen ? <Minimize2 className="w-8 h-8" /> : <Maximize2 className="w-8 h-8" />}
       </button>
-      <div className="absolute top-[58%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
+      <div className="absolute top-[56%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <ScoreTable teamNames={teamNames} scores={scores} winner={winner} setWinner={setWinner} handleConfetti={handleConfetti} />
       </div>
     </div>
