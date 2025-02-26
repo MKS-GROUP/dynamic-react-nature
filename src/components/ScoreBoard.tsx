@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
@@ -170,15 +171,15 @@ const ScoreBoard = () => {
         <div className="grid grid-cols-2 gap-2 bg-[#1a1a1a] rounded-lg overflow-hidden">
           {['teamA', 'teamB'].map((team) => (
             <div key={team} className="bg-[#3d3935] p-4 text-center">
-              <h3 className="text-6xl text-white mb-4 font-extrabold">{teamNames[team]}</h3>
+              <h3 className="text-6xl text-white mb-4 font-extrabold">{teamNames[team as keyof typeof teamNames]}</h3>
               <motion.div
-                key={scores[team]}
+                key={scores[team as keyof typeof scores]}
                 initial={{ scale: 1 }}
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 0.3 }}
                 className="text-9xl md:text-[12rem] font-black text-white"
               >
-                {String(scores[team]).padStart(2, '0')}
+                {String(scores[team as keyof typeof scores]).padStart(2, '0')}
               </motion.div>
             </div>
           ))}
@@ -190,7 +191,7 @@ const ScoreBoard = () => {
               {[-1, 1, 2, 3].map((points) => (
                 <button
                   key={points}
-                  onClick={() => updateScore(team, points)}
+                  onClick={() => updateScore(team as 'teamA' | 'teamB', points)}
                   className={`px-4 py-3 rounded-lg transition-all ${points < 0 ? 'bg-red-500' : 'bg-[#FF8C00]'} text-white hover:bg-opacity-90`}
                 >
                   {points > 0 ? `+${points}` : points}
@@ -210,7 +211,6 @@ const ScoreBoard = () => {
             </button>
             <button
               onClick={() => {
-                handleConfetti();
                 determineWinner();
 
                 const updatedData = {
@@ -252,7 +252,7 @@ const ScoreBoard = () => {
             <h2 className="text-6xl md:text-8xl font-extrabold">{winner}</h2>
           </motion.div>
         </div>
-      )};
+      )}
 
       <Link
         to="/home"
