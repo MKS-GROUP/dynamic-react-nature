@@ -4,6 +4,7 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import { Link } from 'react-router-dom';
+import Fireworks from './Fireworks';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -149,10 +150,10 @@ const ScoreBoard = () => {
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${backgroundFrame})` }}>
       {winner && winner !== "It's a Tie!" && (
-        <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
-        />
+        <>
+          <Confetti width={window.innerWidth} height={window.innerHeight} />
+          <Fireworks />
+        </>
       )}
 
       <button

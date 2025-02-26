@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
+import Fireworks from './Fireworks';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -125,7 +126,13 @@ const ScoreBoard = () => {
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${backgroundFrame})` }}>
-      {winner && winner !== "It's a Tie!" && <Confetti width={window.innerWidth} height={window.innerHeight} />}
+      {winner && winner !== "It's a Tie!" && (
+        <>
+          <Confetti width={window.innerWidth} height={window.innerHeight} />
+          <Fireworks />
+        </>
+      )}
+      
       <button onClick={toggleFullscreen} className="absolute top-4 right-4 text-white hover:text-gray-200">
         {isFullscreen ? <Minimize2 className="w-8 h-8" /> : <Maximize2 className="w-8 h-8" />}
       </button>
