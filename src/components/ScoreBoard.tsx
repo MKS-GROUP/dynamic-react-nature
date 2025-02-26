@@ -5,10 +5,6 @@ import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import { Link } from 'react-router-dom';
 
-
-
-
-
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [teamNames, setTeamNames] = useState({ teamA: '', teamB: '' });
@@ -18,7 +14,6 @@ const ScoreBoard = () => {
 
   const backgroundFrame = "/lovable-uploads/499c5578-5601-4c64-a518-93c9507be712.png";
 
-  // Retrieve the game data from localStorage
   useEffect(() => {
     const savedData = localStorage.getItem('gameData');
     if (savedData) {
@@ -29,9 +24,7 @@ const ScoreBoard = () => {
       setWinner(parsedData.winner);
     }
   }, []);
-  
 
-  // Save the game data to localStorage
   useEffect(() => {
     if (gameStarted) {
       localStorage.setItem(
@@ -58,8 +51,13 @@ const ScoreBoard = () => {
     }
   };
 
-  
-  
+  const handleConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
 
   const updateScore = (team: 'teamA' | 'teamB', points: number) => {
     setScores((prev) => {
@@ -67,7 +65,6 @@ const ScoreBoard = () => {
         ...prev,
         [team]: Math.max(0, prev[team] + points),
       };
-      // Update localStorage when scores change
       localStorage.setItem(
         'gameData',
         JSON.stringify({
@@ -97,12 +94,8 @@ const ScoreBoard = () => {
       setWinner("It's a Tie!");
     }
   };
-  
-
-  
 
   const handleNextGame = () => {
-    // Clear localStorage when the next game is started
     localStorage.removeItem('gameData');
     setGameStarted(false);
     setTeamNames({ teamA: '', teamB: '' });
@@ -111,63 +104,50 @@ const ScoreBoard = () => {
   };
 
   if (!gameStarted) {
-        return (
-          <div
-            className="min-h-screen bg-cover bg-center bg-no-repeat relative flex items-center justify-center"
-            style={{
-              backgroundImage: `url(${backgroundFrame})`,
-            }}
-          >
-            <form onSubmit={handleStartGame} className="bg-[#3d3935] p-8 rounded-lg w-[90%] max-w-md">
-              <h2 className="text-3xl text-white mb-6 font-bold">Enter Team Names</h2>
-              <div className="space-y-4">
-                <div>
-                  <input
-                    type="text"
-                    value={teamNames.teamA}
-                    onChange={(e) => setTeamNames((prev) => ({ ...prev, teamA: e.target.value }))}
-                    placeholder="Team A Name"
-                    className="w-full p-3 rounded-lg bg-[#1a1a1a] text-white border border-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-[#FF8C00]"
-                    required
-                  />
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    value={teamNames.teamB}
-                    onChange={(e) => setTeamNames((prev) => ({ ...prev, teamB: e.target.value }))}
-                    placeholder="Team B Name"
-                    className="w-full p-3 rounded-lg bg-[#1a1a1a] text-white border border-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-[#FF8C00]"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all font-bold"
-                >
-                  Start Game
-                </button>
-              </div>
-            </form>
+    return (
+      <div
+        className="min-h-screen bg-cover bg-center bg-no-repeat relative flex items-center justify-center"
+        style={{
+          backgroundImage: `url(${backgroundFrame})`,
+        }}
+      >
+        <form onSubmit={handleStartGame} className="bg-[#3d3935] p-8 rounded-lg w-[90%] max-w-md">
+          <h2 className="text-3xl text-white mb-6 font-bold">Enter Team Names</h2>
+          <div className="space-y-4">
+            <div>
+              <input
+                type="text"
+                value={teamNames.teamA}
+                onChange={(e) => setTeamNames((prev) => ({ ...prev, teamA: e.target.value }))}
+                placeholder="Team A Name"
+                className="w-full p-3 rounded-lg bg-[#1a1a1a] text-white border border-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-[#FF8C00]"
+                required
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                value={teamNames.teamB}
+                onChange={(e) => setTeamNames((prev) => ({ ...prev, teamB: e.target.value }))}
+                placeholder="Team B Name"
+                className="w-full p-3 rounded-lg bg-[#1a1a1a] text-white border border-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-[#FF8C00]"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 bg-[#FF8C00] text-white rounded-lg hover:bg-opacity-90 transition-all font-bold"
+            >
+              Start Game
+            </button>
           </div>
-        );
-      }
-
-      const handleConfetti = () => {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-      }
-
-
-      
-    
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${backgroundFrame})` }}>
-      {/* Confetti when a winner is announced */}
       {winner && winner !== "It's a Tie!" && (
         <Confetti
           width={window.innerWidth}
@@ -185,7 +165,7 @@ const ScoreBoard = () => {
 
       <div className="absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <div className="grid grid-cols-2 gap-2 bg-[#1a1a1a] rounded-lg overflow-hidden">
-          {['teamA', 'teamB'].map((team) => (
+          {(['teamA', 'teamB'] as const).map((team) => (
             <div key={team} className="bg-[#3d3935] p-4 text-center">
               <h3 className="text-6xl text-white mb-4 font-extrabold">{teamNames[team]}</h3>
               <motion.div
@@ -201,9 +181,8 @@ const ScoreBoard = () => {
           ))}
         </div>
 
-        {/* Score Buttons */}
         <div className="mt-8 grid grid-cols-2 gap-8">
-          {['teamA', 'teamB'].map((team) => (
+          {(['teamA', 'teamB'] as const).map((team) => (
             <div key={team} className="flex justify-center gap-2">
               {[-1, 1, 2, 3].map((points) => (
                 <button
@@ -218,7 +197,6 @@ const ScoreBoard = () => {
           ))}
         </div>
 
-        {/* Reset, Win, Next Game Buttons */}
         <div className="mt-8 flex flex-col items-center gap-4">
           <div className="flex gap-4" >
             <button
@@ -227,31 +205,25 @@ const ScoreBoard = () => {
             >
               Reset
             </button>
-           
+            <button
+              onClick={() => {
+                handleConfetti();
+                determineWinner();
 
+                const updatedData = {
+                  gameStarted,
+                  teamNames,
+                  scores,
+                  winner: scores.teamA > scores.teamB ? teamNames.teamA : scores.teamB > scores.teamA ? teamNames.teamB : "It's a Tie!",
+                };
 
-  <button
-  onClick={() => {
-    handleConfetti();
-    determineWinner();
-
-    // Update localStorage with the latest winner
-    const updatedData = {
-      gameStarted,
-      teamNames,
-      scores,
-      winner: scores.teamA > scores.teamB ? teamNames.teamA : scores.teamB > scores.teamA ? teamNames.teamB : "It's a Tie!",
-    };
-
-    localStorage.setItem('gameData', JSON.stringify(updatedData));
-    setWinner(updatedData.winner); // Ensure local state updates as well
-  }}
-  className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
->
-  Win
-</button>
-
-
+                localStorage.setItem('gameData', JSON.stringify(updatedData));
+                setWinner(updatedData.winner);
+              }}
+              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
+            >
+              Win
+            </button>
           </div>
           <button
             onClick={handleNextGame}
@@ -259,51 +231,34 @@ const ScoreBoard = () => {
           >
             Next Game
           </button>
-          
         </div>
-      
       </div>
 
-{winner && (
-  <div
-    className="fixed inset-0 flex items-center justify-center "
-    onClick={() => setWinner(null)}
-  >
-    <motion.div
-      initial={{ scale: 0.5, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className="bg-white p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[80%] max-w-3xl"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Sparkles */}
-      {/* <motion.div 
-        className="absolute top-0 left-1/2 transform -translate-x-1/2 text-yellow-400 text-3xl"
-        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
-        transition={{ duration: 1.2, repeat: Infinity, repeatType: "reverse" }}
-      >
-        ✨✨✨
-      </motion.div> */}
+      {winner && (
+        <div
+          className="fixed inset-0 flex items-center justify-center "
+          onClick={() => setWinner(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            className="bg-white p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[80%] max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <motion.div 
+              className="text-yellow-400 text-7xl mb-4"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
+            >
+              🏆
+            </motion.div>
 
-      {/* Trophy */}
-      <motion.div 
-        className="text-yellow-400 text-7xl mb-4"
-        animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
-      >
-        🏆
-      </motion.div>
-
-      <h2 className="text-4xl font-extrabold text-indigo-600">Congratulations!</h2>
-      <p className="text-7xl font-extrabold text-gray-700 mt-2">{winner}</p>
-
-      {/* Claim Prize Button */}
-     
-    </motion.div>
-  </div>
-)};
-
-
+            <h2 className="text-4xl font-extrabold text-indigo-600">Congratulations!</h2>
+            <p className="text-7xl font-extrabold text-gray-700 mt-2">{winner}</p>
+          </motion.div>
+        </div>
+      )}
 
       <Link
         to="/home"
