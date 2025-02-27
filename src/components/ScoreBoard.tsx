@@ -6,7 +6,7 @@ import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import { Link } from 'react-router-dom';
 import Fireworks from './Fireworks';
-import { gameDataRef, updateGameData, onValue } from '../lib/firebase';
+import { gameDataRef, updateGameData, onValue, ref, database } from '../lib/firebase';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -25,7 +25,7 @@ const ScoreBoard = () => {
 
   // Load initial data from Firebase
   useEffect(() => {
-    const roomRef = ref(gameDataRef, roomId);
+    const roomRef = ref(database, `gameData/${roomId}`);
     const unsubscribe = onValue(roomRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -48,7 +48,7 @@ const ScoreBoard = () => {
   // Save data to Firebase whenever it changes
   useEffect(() => {
     if (gameStarted) {
-      const roomRef = ref(gameDataRef, roomId);
+      const roomRef = ref(database, `gameData/${roomId}`);
       updateGameData({
         gameStarted,
         teamNames,

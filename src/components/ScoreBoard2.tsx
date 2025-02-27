@@ -5,8 +5,7 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import Fireworks from './Fireworks';
-import { gameDataRef, onValue } from '../lib/firebase';
-import { ref } from 'firebase/database';
+import { gameDataRef, onValue, ref, database } from '../lib/firebase';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -24,7 +23,7 @@ const ScoreBoard = () => {
 
   // Load data from Firebase when it changes
   useEffect(() => {
-    const roomRef = ref(gameDataRef, roomId);
+    const roomRef = ref(database, `gameData/${roomId}`);
     const unsubscribe = onValue(roomRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {

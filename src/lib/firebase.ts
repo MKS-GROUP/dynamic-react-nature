@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set } from "firebase/database";
+import { getDatabase, ref, onValue, set, Database, DatabaseReference } from "firebase/database";
 
 // Your web app's Firebase configuration - you'll need to replace these with your actual Firebase config
 const firebaseConfig = {
@@ -25,4 +25,4 @@ export const updateGameData = (data: any) => {
   set(gameDataRef, data);
 };
 
-export { onValue };
+export { ref, onValue, database };
