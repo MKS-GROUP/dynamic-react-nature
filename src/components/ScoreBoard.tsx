@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
@@ -6,7 +5,6 @@ import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import { Link } from 'react-router-dom';
 import Fireworks from './Fireworks';
-import { gameDataRef, updateGameData, onValue } from '../lib/firebase';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -14,37 +12,33 @@ const ScoreBoard = () => {
   const [scores, setScores] = useState({ teamA: 0, teamB: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
-  const [roomId, setRoomId] = useState<string>(() => {
-    // Get room ID from URL or create a new one
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('room') || `room-${Math.random().toString(36).substring(2, 8)}`;
-    return id;
-  });
 
   const backgroundFrame = "/lovable-uploads/499c5578-5601-4c64-a518-93c9507be712.png";
 
-  // Save data to localStorage
-  useEffect(() => {
-    const data = JSON.stringify({
-      gameStarted,
-      teamNames,
-      scores,
-      winner,
-    });
-    localStorage.setItem('gameData', data);
-  }, [gameStarted, teamNames, scores, winner]);
-
-  // Load data from localStorage
   useEffect(() => {
     const savedData = localStorage.getItem('gameData');
     if (savedData) {
-      const data = JSON.parse(savedData);
-      setGameStarted(data.gameStarted);
-      setTeamNames(data.teamNames);
-      setScores(data.scores);
-      setWinner(data.winner);
+      const parsedData = JSON.parse(savedData);
+      setGameStarted(parsedData.gameStarted);
+      setTeamNames(parsedData.teamNames);
+      setScores(parsedData.scores);
+      setWinner(parsedData.winner);
     }
   }, []);
+
+  useEffect(() => {
+    if (gameStarted) {
+      localStorage.setItem(
+        'gameData',
+        JSON.stringify({
+          gameStarted,
+          teamNames,
+          scores,
+          winner,
+        })
+      );
+    }
+  }, [gameStarted, teamNames, scores, winner]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -72,6 +66,15 @@ const ScoreBoard = () => {
         ...prev,
         [team]: Math.max(0, prev[team] + points),
       };
+      localStorage.setItem(
+        'gameData',
+        JSON.stringify({
+          gameStarted,
+          teamNames,
+          scores: updatedScores,
+          winner,
+        })
+      );
       return updatedScores;
     });
   };
@@ -94,16 +97,11 @@ const ScoreBoard = () => {
   };
 
   const handleNextGame = () => {
+    localStorage.removeItem('gameData');
     setGameStarted(false);
     setTeamNames({ teamA: '', teamB: '' });
     setScores({ teamA: 0, teamB: 0 });
     setWinner(null);
-  };
-
-  const copyRoomLink = () => {
-    const link = window.location.href;
-    navigator.clipboard.writeText(link);
-    alert('Room link copied to clipboard! Share this with others to join the same scoreboard.');
   };
 
   if (!gameStarted) {
@@ -143,17 +141,6 @@ const ScoreBoard = () => {
             >
               Start Game
             </button>
-            
-            <div className="mt-4 p-4 bg-black/20 rounded-lg">
-              <p className="text-white text-sm mb-2">Room ID: {roomId}</p>
-              <button
-                type="button"
-                onClick={copyRoomLink}
-                className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
-              >
-                Copy Room Link to Share
-              </button>
-            </div>
           </div>
         </form>
       </div>
@@ -223,6 +210,16 @@ const ScoreBoard = () => {
               onClick={() => {
                 handleConfetti();
                 determineWinner();
+
+                const updatedData = {
+                  gameStarted,
+                  teamNames,
+                  scores,
+                  winner: scores.teamA > scores.teamB ? teamNames.teamA : scores.teamB > scores.teamA ? teamNames.teamB : "It's a Tie!",
+                };
+
+                localStorage.setItem('gameData', JSON.stringify(updatedData));
+                setWinner(updatedData.winner);
               }}
               className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
             >
@@ -235,80 +232,38 @@ const ScoreBoard = () => {
           >
             Next Game
           </button>
-          
-          <div className="mt-4 p-3 bg-black/20 rounded-lg flex items-center gap-2">
-            <span className="text-white text-sm">Room: {roomId}</span>
-            <button
-              onClick={copyRoomLink}
-              className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-opacity-90"
-            >
-              Share
-            </button>
-          </div>
         </div>
       </div>
 
       {winner && (
         <div
-          className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30"
+          className="fixed inset-0 flex items-center justify-center "
           onClick={() => setWinner(null)}
         >
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-12 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[90%] max-w-3xl border-4 border-yellow-400"
+            className="bg-white p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[80%] max-w-3xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0ic3RhciIgdmlld0JveD0iMCAwIDEwIDEwIiB3aWR0aD0iMTAlIiBoZWlnaHQ9IjEwJSI+PHBvbHlnb24gcG9pbnRzPSI1LDAgNi40NywzLjUzIDEwLDQuMDggNy41LDYuODQgOC4wOSwxMCA1LDguNTMgMS45MSwxMCAyLjUsNi44NCAwLDQuMDggMy41MywzLjUzIiBmaWxsPSJyZ2JhKDI1NSwyMTUsMCwwLjEpIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3N0YXIpIi8+PC9zdmc+')] opacity-30" />
-            
             <motion.div 
-              className="text-yellow-400 text-8xl mb-6"
-              animate={{ 
-                y: [0, -20, 0],
-                rotateZ: [0, -10, 10, 0]
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                repeatType: "reverse"
-              }}
+              className="text-yellow-400 text-7xl mb-4"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
             >
               🏆
             </motion.div>
 
-            <motion.h2 
-              className="text-5xl font-black text-white mb-4 relative"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              Congratulations!
-            </motion.h2>
-
-            <motion.p 
-              className="text-7xl font-black bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 text-transparent bg-clip-text mt-4"
-              initial={{ y: 20 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              {winner}
-            </motion.p>
-
-            <motion.button
-              className="mt-8 px-8 py-3 bg-yellow-400 text-purple-900 rounded-full font-bold text-lg hover:bg-yellow-300 transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setWinner(null)}
-            >
-              Continue Playing
-            </motion.button>
+            <h2 className="text-4xl font-extrabold text-indigo-600">Congratulations!</h2>
+            <p className="text-7xl font-extrabold text-gray-700 mt-2">{winner}</p>
           </motion.div>
         </div>
       )}
 
       <Link
         to="/home"
-        className="absolute bottom-4 left-4 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-opacity-90"
+        className="mt-4 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-opacity-90"
       >
         Home
       </Link>
