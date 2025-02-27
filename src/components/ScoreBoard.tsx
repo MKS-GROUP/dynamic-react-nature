@@ -349,7 +349,7 @@ const ScoreBoard = () => {
             </motion.div>
 
             {/* Button with hover effect */}
-            <motion.button
+            {/* <motion.button
               className="mt-10 px-10 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-purple-900 rounded-full font-bold text-lg 
                 shadow-[0_0_15px_rgba(254,240,138,0.7)] relative overflow-hidden group"
               whileHover={{ scale: 1.05 }}
@@ -361,7 +361,7 @@ const ScoreBoard = () => {
             >
               <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-300 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <span className="relative">Continue Playing</span>
-            </motion.button>
+            </motion.button> */}
           </motion.div>
         </div>
       )}
