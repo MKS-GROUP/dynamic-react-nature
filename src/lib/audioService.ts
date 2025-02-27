@@ -23,10 +23,18 @@ class AudioService {
     if (!this.audio) {
       this.audio = new Audio("/victory.mp3");
       this.audio.addEventListener("ended", () => {
-        this.isPlaying = false;
+        // When the audio ends, start playing again if we're still in "playing" state
+        if (this.isPlaying) {
+          this.audio?.play().catch(error => {
+            console.error("Error replaying audio:", error);
+          });
+        }
       });
     }
 
+    // Set to loop mode
+    this.audio.loop = true;
+    
     // Play the sound
     this.audio.currentTime = 0;
     this.isPlaying = true;
