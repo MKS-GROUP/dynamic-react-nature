@@ -6,7 +6,7 @@ import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import { Link } from 'react-router-dom';
 import Fireworks from './Fireworks';
-import { gameDataRef, updateGameData, onValue, ref, database } from '../lib/firebase';
+import { gameDataRef, updateGameData, onValue } from '../lib/firebase';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -23,40 +23,28 @@ const ScoreBoard = () => {
 
   const backgroundFrame = "/lovable-uploads/499c5578-5601-4c64-a518-93c9507be712.png";
 
-  // Load initial data from Firebase
+  // Save data to localStorage
   useEffect(() => {
-    const roomRef = ref(database, `gameData/${roomId}`);
-    const unsubscribe = onValue(roomRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setGameStarted(data.gameStarted);
-        setTeamNames(data.teamNames);
-        setScores(data.scores);
-        setWinner(data.winner);
-      }
+    const data = JSON.stringify({
+      gameStarted,
+      teamNames,
+      scores,
+      winner,
     });
+    localStorage.setItem('gameData', data);
+  }, [gameStarted, teamNames, scores, winner]);
 
-    // Update URL with room ID for sharing
-    if (!window.location.search.includes('room')) {
-      const newUrl = `${window.location.pathname}?room=${roomId}`;
-      window.history.pushState({ path: newUrl }, '', newUrl);
-    }
-
-    return () => unsubscribe();
-  }, [roomId]);
-
-  // Save data to Firebase whenever it changes
+  // Load data from localStorage
   useEffect(() => {
-    if (gameStarted) {
-      const roomRef = ref(database, `gameData/${roomId}`);
-      updateGameData({
-        gameStarted,
-        teamNames,
-        scores,
-        winner,
-      });
+    const savedData = localStorage.getItem('gameData');
+    if (savedData) {
+      const data = JSON.parse(savedData);
+      setGameStarted(data.gameStarted);
+      setTeamNames(data.teamNames);
+      setScores(data.scores);
+      setWinner(data.winner);
     }
-  }, [gameStarted, teamNames, scores, winner, roomId]);
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {

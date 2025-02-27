@@ -5,7 +5,6 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import Fireworks from './Fireworks';
-import { gameDataRef, onValue, ref, database } from '../lib/firebase';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -21,21 +20,17 @@ const ScoreBoard = () => {
 
   const backgroundFrame = "/lovable-uploads/499c5578-5601-4c64-a518-93c9507be712.png";
 
-  // Load data from Firebase when it changes
+  // Load data from localStorage
   useEffect(() => {
-    const roomRef = ref(database, `gameData/${roomId}`);
-    const unsubscribe = onValue(roomRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setGameStarted(data.gameStarted);
-        setTeamNames(data.teamNames);
-        setScores(data.scores);
-        setWinner(data.winner);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [roomId]);
+    const savedData = localStorage.getItem('gameData');
+    if (savedData) {
+      const data = JSON.parse(savedData);
+      setGameStarted(data.gameStarted);
+      setTeamNames(data.teamNames);
+      setScores(data.scores);
+      setWinner(data.winner);
+    }
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -125,7 +120,7 @@ const ScoreBoard = () => {
       </div>
       
       <div className="absolute bottom-4 left-4 px-4 py-2 bg-black/30 rounded text-white text-sm">
-        Connected to Room: {roomId}
+        Current Room: {roomId}
       </div>
     </div>
   );
