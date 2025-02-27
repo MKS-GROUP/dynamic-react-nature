@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
@@ -176,7 +177,7 @@ const ScoreTable = ({
 
       {winner && (
         <div
-          className="fixed inset-0 flex items-center justify-center"
+          className="fixed inset-0 flex items-center justify-center z-50"
           onClick={() => {
             if (winner && winner !== "It's a Tie!") {
               handleConfetti();
@@ -184,23 +185,112 @@ const ScoreTable = ({
             setWinner(null);
           }}
         >
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="bg-white p-10 rounded-2xl shadow-2xl text-center relative overflow-hidden w-[80%] max-w-3xl"
+            transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+            className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-12 rounded-2xl shadow-[0_0_40px_rgba(254,215,170,0.5)] text-center relative overflow-hidden w-[90%] max-w-3xl border-4 border-yellow-400 z-50"
             onClick={(e) => e.stopPropagation()}
           >
-            <motion.div 
-              className="text-yellow-400 text-7xl mb-4"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
+            {/* Background Stars Pattern */}
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0ic3RhciIgdmlld0JveD0iMCAwIDEwIDEwIiB3aWR0aD0iMTAlIiBoZWlnaHQ9IjEwJSI+PHBvbHlnb24gcG9pbnRzPSI1LDAgNi40NywzLjUzIDEwLDQuMDggNy41LDYuODQgOC4wOSwxMCA1LDguNTMgMS45MSwxMCAyLjUsNi44NCAwLDQuMDggMy41MywzLjUzIiBmaWxsPSJyZ2JhKDI1NSwyMTUsMCwwLjEpIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3N0YXIpIi8+PC9zdmc+')] opacity-50"></div>
+            
+            {/* Animated lights */}
+            <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-r from-transparent via-yellow-200/30 to-transparent animate-[pulse_2s_ease-in-out_infinite]"></div>
+            <div className="absolute bottom-0 right-0 w-full h-8 bg-gradient-to-r from-transparent via-yellow-200/30 to-transparent animate-[pulse_2s_ease-in-out_infinite_0.5s]"></div>
+            
+            {/* Trophy Animation */}
+            <div className="relative">
+              <motion.div 
+                className="absolute -inset-4 rounded-full bg-yellow-400/20 blur-xl"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              ></motion.div>
+              <motion.div 
+                className="text-yellow-400 text-9xl mb-8 relative"
+                animate={{ 
+                  y: [0, -20, 0],
+                  rotateZ: [0, -10, 10, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              >
+                🏆
+              </motion.div>
+            </div>
+
+            {/* Animated stars */}
+            <div className="absolute top-10 right-10">
+              <motion.div
+                className="text-yellow-200 text-2xl"
+                animate={{ 
+                  opacity: [0, 1, 0],
+                  scale: [0.5, 1.5, 0.5],
+                  y: [0, -20, 0]
+                }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+              >
+                ✨
+              </motion.div>
+            </div>
+            <div className="absolute bottom-10 left-10">
+              <motion.div
+                className="text-yellow-200 text-2xl"
+                animate={{ 
+                  opacity: [0, 1, 0],
+                  scale: [0.5, 1.5, 0.5],
+                  y: [0, -20, 0]
+                }}
+                transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+              >
+                ✨
+              </motion.div>
+            </div>
+
+            {/* Title with glow */}
+            <motion.h2 
+              className="text-6xl font-black text-white mb-6 relative text-shadow-lg"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
             >
-              🏆
+              <span className="relative">
+                <span className="absolute -inset-2 blur-md bg-white/20 rounded-full"></span>
+                Congratulations!
+              </span>
+            </motion.h2>
+
+            {/* Winner name with gradient text */}
+            <motion.div 
+              className="my-6 relative"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+            >
+              <div className="absolute inset-0 blur-xl bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-200 opacity-40"></div>
+              <p className="text-7xl font-black bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-200 text-transparent bg-clip-text relative z-10">
+                {winner}
+              </p>
             </motion.div>
 
-            <h2 className="text-5xl font-extrabold text-indigo-600">Congratulations!</h2>
-            <p className="text-7xl font-extrabold text-gray-700 mt-2">{winner}</p>
+            {/* Button with hover effect */}
+            <motion.button
+              className="mt-10 px-10 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-purple-900 rounded-full font-bold text-lg 
+                shadow-[0_0_15px_rgba(254,240,138,0.7)] relative overflow-hidden group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setWinner(null);
+              }}
+            >
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-300 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              <span className="relative">Continue Playing</span>
+            </motion.button>
           </motion.div>
         </div>
       )}
