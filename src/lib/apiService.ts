@@ -26,12 +26,14 @@ class ApiService {
     const urlParams = new URLSearchParams(window.location.search);
     const serverIP = urlParams.get('server');
     
-    // Use param, or local IP, or fallback to localhost
+    // Use param, or try to detect the server IP from the current hostname, or fallback to localhost
     if (serverIP) {
       this.apiUrl = `http://${serverIP}:5000`;
+    } else if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      // If accessed via IP address, use that same IP for the server
+      this.apiUrl = `http://${window.location.hostname}:5000`;
     } else {
-      // Try to use the server's IP if we're on the same network
-      // Fallback to localhost if not explicitly specified
+      // Fallback to localhost if not explicitly specified and not accessed via IP
       this.apiUrl = 'http://localhost:5000';
     }
     
