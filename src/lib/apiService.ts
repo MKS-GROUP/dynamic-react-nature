@@ -18,6 +18,7 @@ class ApiService {
   private isConnecting: boolean = false;
   private reconnectTimer: any = null;
 
+  
   private constructor() {
     // Get server IP from URL parameters if available
     const urlParams = new URLSearchParams(window.location.search);
