@@ -40,16 +40,17 @@ const ScoreBoard = () => {
     // Save to localStorage as fallback
     localStorage.setItem('gameData', JSON.stringify(gameData));
     
-    // Send to API
-    try {
-      const success = await apiService.updateGameData(gameData);
-      if (success) {
-        setIsConnected(true);
-        setLastUpdateTime(Date.now());
-      }
-    } catch (error) {
-      console.error('Failed to sync with server:', error);
-    }
+    // Send to API - no need to await this as it's now queue-based
+    apiService.updateGameData(gameData)
+      .then(success => {
+        if (success) {
+          setIsConnected(true);
+          setLastUpdateTime(Date.now());
+        }
+      })
+      .catch(error => {
+        console.error('Failed to queue update:', error);
+      });
   }, [gameStarted, teamNames, scores, winner]);
 
   // Load initial data when component mounts
@@ -132,20 +133,10 @@ const ScoreBoard = () => {
   // Sync data to backend and localStorage when state changes
   useEffect(() => {
     if (gameStarted) {
-      // Only sync if it's been more than 100ms since the last update
-      // This prevents too many simultaneous updates
-      const currentTime = Date.now();
-      if (currentTime - lastUpdateTime > 100) {
-        syncWithServer();
-      } else {
-        // Schedule a sync after the debounce period
-        const timeoutId = setTimeout(() => {
-          syncWithServer();
-        }, 100);
-        return () => clearTimeout(timeoutId);
-      }
+      // Sync immediately for more responsive updates
+      syncWithServer();
     }
-  }, [gameStarted, teamNames, scores, winner, syncWithServer, lastUpdateTime]);
+  }, [gameStarted, teamNames, scores, winner, syncWithServer]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -175,6 +166,9 @@ const ScoreBoard = () => {
       };
       return updatedScores;
     });
+    
+    // Force an immediate sync instead of waiting for useEffect
+    setTimeout(() => syncWithServer(), 0);
   };
 
   const handleStartGame = (e: React.FormEvent) => {
@@ -196,6 +190,9 @@ const ScoreBoard = () => {
     } else {
       setWinner("It's a Tie!");
     }
+    
+    // Force an immediate sync
+    setTimeout(() => syncWithServer(), 0);
   };
 
   const handleNextGame = () => {
@@ -204,6 +201,9 @@ const ScoreBoard = () => {
     setTeamNames({ teamA: '', teamB: '' });
     setScores({ teamA: 0, teamB: 0 });
     setWinner(null);
+    
+    // Force an immediate sync
+    setTimeout(() => syncWithServer(), 0);
   };
 
   const handleChangeServer = (e: React.FormEvent) => {
@@ -427,7 +427,6 @@ const ScoreBoard = () => {
                   key={points}
                   onClick={() => {
                     updateScore(team, points);
-                    // We'll let the effect handle the sync after state updates
                   }}
                   className={`px-4 py-3 rounded-lg transition-all ${points < 0 ? 'bg-red-500' : 'bg-[#FF8C00]'} text-white hover:bg-opacity-90`}
                 >
@@ -454,7 +453,6 @@ const ScoreBoard = () => {
               onClick={() => {
                 handleConfetti();
                 determineWinner();
-                // Winner will be set in state, triggering the effect for sync
               }}
               className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
             >
