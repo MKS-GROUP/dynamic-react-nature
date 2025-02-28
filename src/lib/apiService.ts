@@ -17,6 +17,8 @@ class ApiService {
   private maxConnectionAttempts: number = 3;
   private isConnecting: boolean = false;
   private reconnectTimer: any = null;
+  private updateQueue: GameData[] = [];
+  private isProcessingUpdate: boolean = false;
 
   
   private constructor() {
@@ -35,6 +37,9 @@ class ApiService {
     
     console.log('Connecting to API at:', this.apiUrl);
     this.initSocket();
+    
+    // Process updates every 50ms to reduce overhead but still be responsive
+    setInterval(() => this.processUpdateQueue(), 50);
   }
 
   public static getInstance(): ApiService {
@@ -136,36 +141,70 @@ class ApiService {
   }
 
   public async updateGameData(data: GameData): Promise<boolean> {
+    // Add to queue instead of sending immediately
+    // This will coalesce multiple rapid updates
+    this.updateQueue.push({...data});
+    
+    // Always return true from this method since we're queuing
+    // The actual result will be determined when processing the queue
+    return true;
+  }
+  
+  private async processUpdateQueue(): Promise<void> {
+    // If there are no updates or we're already processing, do nothing
+    if (this.updateQueue.length === 0 || this.isProcessingUpdate) {
+      return;
+    }
+    
+    // Set processing flag to prevent concurrent updates
+    this.isProcessingUpdate = true;
+    
     try {
-      console.log('Updating game data via REST API:', data);
+      // Take the most recent update (last item) and clear the queue
+      const latestUpdate = this.updateQueue.pop();
+      this.updateQueue = []; // Clear any queued updates
       
-      // Update via REST API
+      if (!latestUpdate) {
+        this.isProcessingUpdate = false;
+        return;
+      }
+      
+      console.log('Processing update from queue:', latestUpdate);
+      
+      // First try socket update if connected
+      if (this.socket && this.socket.connected) {
+        console.log('Sending update via socket');
+        this.socket.emit('updateGameData', latestUpdate);
+      }
+      
+      // Also send via REST API for reliability
+      console.log('Sending update via REST API');
       const response = await fetch(`${this.apiUrl}/api/game`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(latestUpdate),
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to update game data: ${response.status} ${response.statusText}`);
+        console.error('Failed REST update:', response.status, response.statusText);
+        
+        // If REST fails but socket was good, we still consider it a success
+        if (!(this.socket && this.socket.connected)) {
+          // Both methods failed
+          throw new Error('Failed to update via both socket and REST');
+        }
       }
-
-      // Also emit via socket for real-time updates
-      if (this.socket && this.socket.connected) {
-        console.log('Emitting update via socket');
-        this.socket.emit('updateGameData', data);
-      } else {
-        console.log('Socket not connected, only using REST API');
-        // Try to reconnect socket
-        this.initSocket();
-      }
-
-      return true;
+      
+      console.log('Update successfully processed');
     } catch (error) {
-      console.error('Error updating game data:', error);
-      return false;
+      console.error('Error processing update:', error);
+      // If we encounter an error, try to reconnect the socket
+      this.initSocket();
+    } finally {
+      // Release the lock to allow processing of new updates
+      this.isProcessingUpdate = false;
     }
   }
 
