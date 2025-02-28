@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 import { Link } from 'react-router-dom';
 import Fireworks from './Fireworks';
 import { audioService } from '../lib/audioService';
+import { apiService } from '../lib/apiService';
 
 const ScoreBoard = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -14,18 +15,65 @@ const ScoreBoard = () => {
   const [scores, setScores] = useState({ teamA: 0, teamB: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const backgroundFrame = "/lovable-uploads/499c5578-5601-4c64-a518-93c9507be712.png";
 
+  // Load initial data when component mounts
   useEffect(() => {
-    const savedData = localStorage.getItem('gameData');
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      setGameStarted(parsedData.gameStarted);
-      setTeamNames(parsedData.teamNames);
-      setScores(parsedData.scores);
-      setWinner(parsedData.winner);
-    }
+    const fetchInitialData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await apiService.getGameData();
+        if (data) {
+          setGameStarted(data.gameStarted);
+          setTeamNames(data.teamNames);
+          setScores(data.scores);
+          setWinner(data.winner);
+          setIsConnected(true);
+        } else {
+          // Fall back to localStorage if API is not available
+          const savedData = localStorage.getItem('gameData');
+          if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            setGameStarted(parsedData.gameStarted);
+            setTeamNames(parsedData.teamNames);
+            setScores(parsedData.scores);
+            setWinner(parsedData.winner);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+        // Fall back to localStorage
+        const savedData = localStorage.getItem('gameData');
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          setGameStarted(parsedData.gameStarted);
+          setTeamNames(parsedData.teamNames);
+          setScores(parsedData.scores);
+          setWinner(parsedData.winner);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInitialData();
+
+    // Subscribe to real-time updates
+    apiService.subscribeToUpdates((data) => {
+      setGameStarted(data.gameStarted);
+      setTeamNames(data.teamNames);
+      setScores(data.scores);
+      setWinner(data.winner);
+      setIsConnected(true);
+    });
+
+    return () => {
+      // Cleanup subscription
+      apiService.unsubscribeFromUpdates(() => {});
+    };
   }, []);
 
   // Play victory sound when winner is set
@@ -42,17 +90,29 @@ const ScoreBoard = () => {
     };
   }, [winner]);
 
+  // Sync data to backend and localStorage when state changes
   useEffect(() => {
     if (gameStarted) {
-      localStorage.setItem(
-        'gameData',
-        JSON.stringify({
-          gameStarted,
-          teamNames,
-          scores,
-          winner,
+      const gameData = {
+        gameStarted,
+        teamNames,
+        scores,
+        winner,
+      };
+
+      // Save to localStorage as fallback
+      localStorage.setItem('gameData', JSON.stringify(gameData));
+      
+      // Send to API
+      apiService.updateGameData(gameData)
+        .then(success => {
+          if (success) {
+            setIsConnected(true);
+          }
         })
-      );
+        .catch(error => {
+          console.error('Failed to sync with server:', error);
+        });
     }
   }, [gameStarted, teamNames, scores, winner]);
 
@@ -82,15 +142,6 @@ const ScoreBoard = () => {
         ...prev,
         [team]: Math.max(0, prev[team] + points),
       };
-      localStorage.setItem(
-        'gameData',
-        JSON.stringify({
-          gameStarted,
-          teamNames,
-          scores: updatedScores,
-          winner,
-        })
-      );
       return updatedScores;
     });
   };
@@ -120,6 +171,17 @@ const ScoreBoard = () => {
     setWinner(null);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-white text-center">
+          <div className="mb-4 text-2xl">Loading Scoreboard...</div>
+          <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
   if (!gameStarted) {
     return (
       <div
@@ -128,6 +190,10 @@ const ScoreBoard = () => {
           backgroundImage: `url(${backgroundFrame})`,
         }}
       >
+        <div className={`absolute top-4 right-4 px-3 py-1 rounded ${isConnected ? 'bg-green-500' : 'bg-red-500'} text-white text-sm`}>
+          {isConnected ? 'Connected' : 'Offline Mode'}
+        </div>
+        
         <form onSubmit={handleStartGame} className="bg-[#3d3935] p-8 rounded-lg w-[90%] max-w-md">
           <h2 className="text-3xl text-white mb-6 font-bold">Enter Team Names</h2>
           <div className="space-y-4">
@@ -165,6 +231,10 @@ const ScoreBoard = () => {
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${backgroundFrame})` }}>
+      <div className={`absolute top-4 left-4 px-3 py-1 rounded ${isConnected ? 'bg-green-500' : 'bg-red-500'} text-white text-sm z-10`}>
+        {isConnected ? 'Connected' : 'Offline Mode'}
+      </div>
+      
       {winner && winner !== "It's a Tie!" && (
         <>
           <Confetti width={window.innerWidth} height={window.innerHeight} />
@@ -226,16 +296,6 @@ const ScoreBoard = () => {
               onClick={() => {
                 handleConfetti();
                 determineWinner();
-
-                const updatedData = {
-                  gameStarted,
-                  teamNames,
-                  scores,
-                  winner: scores.teamA > scores.teamB ? teamNames.teamA : scores.teamB > scores.teamA ? teamNames.teamB : "It's a Tie!",
-                };
-
-                localStorage.setItem('gameData', JSON.stringify(updatedData));
-                setWinner(updatedData.winner);
               }}
               className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
             >
@@ -347,21 +407,6 @@ const ScoreBoard = () => {
                 {winner}
               </p>
             </motion.div>
-
-            {/* Button with hover effect */}
-            {/* <motion.button
-              className="mt-10 px-10 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-purple-900 rounded-full font-bold text-lg 
-                shadow-[0_0_15px_rgba(254,240,138,0.7)] relative overflow-hidden group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setWinner(null);
-              }}
-            >
-              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-300 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              <span className="relative">Continue Playing</span>
-            </motion.button> */}
           </motion.div>
         </div>
       )}
