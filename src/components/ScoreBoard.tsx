@@ -1,7 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, Settings, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import Confetti from 'react-confetti';
 import confetti from 'canvas-confetti';
 import { Link } from 'react-router-dom';
@@ -17,8 +17,40 @@ const ScoreBoard = () => {
   const [winner, setWinner] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showConnectionInfo, setShowConnectionInfo] = useState(false);
+  const [serverUrl, setServerUrl] = useState(apiService.getConnectionUrl());
+  const [newServerUrl, setNewServerUrl] = useState('');
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
 
   const backgroundFrame = "/lovable-uploads/499c5578-5601-4c64-a518-93c9507be712.png";
+
+  // Function to synchronize game data with server
+  const syncWithServer = useCallback(async () => {
+    if (!gameStarted) return;
+    
+    const gameData = {
+      gameStarted,
+      teamNames,
+      scores,
+      winner,
+    };
+
+    console.log('Syncing with server:', gameData);
+    
+    // Save to localStorage as fallback
+    localStorage.setItem('gameData', JSON.stringify(gameData));
+    
+    // Send to API
+    try {
+      const success = await apiService.updateGameData(gameData);
+      if (success) {
+        setIsConnected(true);
+        setLastUpdateTime(Date.now());
+      }
+    } catch (error) {
+      console.error('Failed to sync with server:', error);
+    }
+  }, [gameStarted, teamNames, scores, winner]);
 
   // Load initial data when component mounts
   useEffect(() => {
@@ -27,12 +59,15 @@ const ScoreBoard = () => {
       try {
         const data = await apiService.getGameData();
         if (data) {
+          console.log('Successfully loaded data from server:', data);
           setGameStarted(data.gameStarted);
           setTeamNames(data.teamNames);
           setScores(data.scores);
           setWinner(data.winner);
           setIsConnected(true);
+          setLastUpdateTime(Date.now());
         } else {
+          console.log('Failed to load from server, trying localStorage');
           // Fall back to localStorage if API is not available
           const savedData = localStorage.getItem('gameData');
           if (savedData) {
@@ -62,17 +97,21 @@ const ScoreBoard = () => {
     fetchInitialData();
 
     // Subscribe to real-time updates
-    apiService.subscribeToUpdates((data) => {
+    const handleUpdate = (data: any) => {
+      console.log('Received update from subscription:', data);
       setGameStarted(data.gameStarted);
       setTeamNames(data.teamNames);
       setScores(data.scores);
       setWinner(data.winner);
       setIsConnected(true);
-    });
+      setLastUpdateTime(Date.now());
+    };
+
+    apiService.subscribeToUpdates(handleUpdate);
 
     return () => {
       // Cleanup subscription
-      apiService.unsubscribeFromUpdates(() => {});
+      apiService.unsubscribeFromUpdates(handleUpdate);
     };
   }, []);
 
@@ -93,28 +132,20 @@ const ScoreBoard = () => {
   // Sync data to backend and localStorage when state changes
   useEffect(() => {
     if (gameStarted) {
-      const gameData = {
-        gameStarted,
-        teamNames,
-        scores,
-        winner,
-      };
-
-      // Save to localStorage as fallback
-      localStorage.setItem('gameData', JSON.stringify(gameData));
-      
-      // Send to API
-      apiService.updateGameData(gameData)
-        .then(success => {
-          if (success) {
-            setIsConnected(true);
-          }
-        })
-        .catch(error => {
-          console.error('Failed to sync with server:', error);
-        });
+      // Only sync if it's been more than 100ms since the last update
+      // This prevents too many simultaneous updates
+      const currentTime = Date.now();
+      if (currentTime - lastUpdateTime > 100) {
+        syncWithServer();
+      } else {
+        // Schedule a sync after the debounce period
+        const timeoutId = setTimeout(() => {
+          syncWithServer();
+        }, 100);
+        return () => clearTimeout(timeoutId);
+      }
     }
-  }, [gameStarted, teamNames, scores, winner]);
+  }, [gameStarted, teamNames, scores, winner, syncWithServer, lastUpdateTime]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -150,6 +181,10 @@ const ScoreBoard = () => {
     e.preventDefault();
     if (teamNames.teamA && teamNames.teamB) {
       setGameStarted(true);
+      // Immediate sync when game starts
+      setTimeout(() => {
+        syncWithServer();
+      }, 0);
     }
   };
 
@@ -171,6 +206,42 @@ const ScoreBoard = () => {
     setWinner(null);
   };
 
+  const handleChangeServer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newServerUrl) {
+      apiService.setServerUrl(newServerUrl);
+      setServerUrl(apiService.getConnectionUrl());
+      setShowConnectionInfo(false);
+      // Try to fetch data from new server
+      setTimeout(() => {
+        apiService.getGameData().then(data => {
+          if (data) {
+            setGameStarted(data.gameStarted);
+            setTeamNames(data.teamNames);
+            setScores(data.scores);
+            setWinner(data.winner);
+            setIsConnected(true);
+          }
+        });
+      }, 500);
+    }
+  };
+
+  const shareLink = () => {
+    // Extract the host from the current URL
+    const serverHost = serverUrl.replace('http://', '').replace(':5000', '');
+    const shareUrl = `${window.location.origin}${window.location.pathname}?server=${serverHost}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => alert('Link copied to clipboard: ' + shareUrl))
+      .catch(err => console.error('Could not copy link: ', err));
+  };
+
+  const forceSync = () => {
+    syncWithServer();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -190,9 +261,41 @@ const ScoreBoard = () => {
           backgroundImage: `url(${backgroundFrame})`,
         }}
       >
-        <div className={`absolute top-4 right-4 px-3 py-1 rounded ${isConnected ? 'bg-green-500' : 'bg-red-500'} text-white text-sm`}>
-          {isConnected ? 'Connected' : 'Offline Mode'}
+        <div 
+          className={`absolute top-4 right-4 px-3 py-1 rounded flex items-center gap-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'} text-white`}
+          onClick={() => setShowConnectionInfo(prev => !prev)}
+        >
+          {isConnected ? <Wifi size={16} /> : <WifiOff size={16} />}
+          <span className="text-sm">{isConnected ? 'Connected' : 'Offline Mode'}</span>
         </div>
+        
+        {showConnectionInfo && (
+          <div className="absolute top-16 right-4 bg-gray-800 p-4 rounded shadow-lg text-white z-20 w-72">
+            <h3 className="text-lg font-bold mb-2">Connection Settings</h3>
+            <p className="text-xs mb-2">Current server: {serverUrl}</p>
+            <form onSubmit={handleChangeServer} className="space-y-2">
+              <input
+                type="text"
+                value={newServerUrl}
+                onChange={(e) => setNewServerUrl(e.target.value)}
+                placeholder="Server IP (e.g. 192.168.1.5)"
+                className="w-full p-2 rounded bg-gray-700 text-white text-sm"
+              />
+              <div className="flex gap-2">
+                <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                  Connect
+                </button>
+                <button 
+                  type="button" 
+                  onClick={shareLink}
+                  className="bg-green-500 text-white px-3 py-1 rounded text-sm"
+                >
+                  Share Link
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
         
         <form onSubmit={handleStartGame} className="bg-[#3d3935] p-8 rounded-lg w-[90%] max-w-md">
           <h2 className="text-3xl text-white mb-6 font-bold">Enter Team Names</h2>
@@ -231,9 +334,48 @@ const ScoreBoard = () => {
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${backgroundFrame})` }}>
-      <div className={`absolute top-4 left-4 px-3 py-1 rounded ${isConnected ? 'bg-green-500' : 'bg-red-500'} text-white text-sm z-10`}>
-        {isConnected ? 'Connected' : 'Offline Mode'}
+      <div 
+        className={`absolute top-4 left-4 px-3 py-1 rounded flex items-center gap-2 cursor-pointer ${isConnected ? 'bg-green-500' : 'bg-red-500'} text-white z-10`}
+        onClick={() => setShowConnectionInfo(prev => !prev)}
+      >
+        {isConnected ? <Wifi size={16} /> : <WifiOff size={16} />}
+        <span className="text-sm">{isConnected ? 'Connected' : 'Offline Mode'}</span>
       </div>
+      
+      {showConnectionInfo && (
+        <div className="absolute top-16 left-4 bg-gray-800 p-4 rounded shadow-lg text-white z-20 w-72">
+          <h3 className="text-lg font-bold mb-2">Connection Settings</h3>
+          <p className="text-xs mb-2">Current server: {serverUrl}</p>
+          <form onSubmit={handleChangeServer} className="space-y-2">
+            <input
+              type="text"
+              value={newServerUrl}
+              onChange={(e) => setNewServerUrl(e.target.value)}
+              placeholder="Server IP (e.g. 192.168.1.5)"
+              className="w-full p-2 rounded bg-gray-700 text-white text-sm"
+            />
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                Connect
+              </button>
+              <button 
+                type="button" 
+                onClick={shareLink}
+                className="bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                Share Link
+              </button>
+              <button 
+                type="button" 
+                onClick={forceSync}
+                className="bg-yellow-500 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+              >
+                <RefreshCw size={14} /> Sync
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
       
       {winner && winner !== "It's a Tie!" && (
         <>
@@ -242,13 +384,22 @@ const ScoreBoard = () => {
         </>
       )}
 
-      <button
-        onClick={toggleFullscreen}
-        className="absolute top-4 right-4 text-white hover:text-gray-200"
-        aria-label="Toggle fullscreen"
-      >
-        {isFullscreen ? <Minimize2 className="w-8 h-8" /> : <Maximize2 className="w-8 h-8" />}
-      </button>
+      <div className="absolute top-4 right-4 flex gap-2">
+        <button
+          onClick={() => setShowConnectionInfo(prev => !prev)}
+          className="text-white hover:text-gray-200"
+          aria-label="Settings"
+        >
+          <Settings className="w-8 h-8" />
+        </button>
+        <button
+          onClick={toggleFullscreen}
+          className="text-white hover:text-gray-200"
+          aria-label="Toggle fullscreen"
+        >
+          {isFullscreen ? <Minimize2 className="w-8 h-8" /> : <Maximize2 className="w-8 h-8" />}
+        </button>
+      </div>
 
       <div className="absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%]">
         <div className="grid grid-cols-2 gap-2 bg-[#1a1a1a] rounded-lg overflow-hidden">
@@ -270,11 +421,14 @@ const ScoreBoard = () => {
 
         <div className="mt-8 grid grid-cols-2 gap-8">
           {(['teamA', 'teamB'] as const).map((team) => (
-            <div key={team} className="flex justify-center gap-2">
+            <div key={team} className="flex flex-wrap justify-center gap-2">
               {[-1, 1, 2, 3].map((points) => (
                 <button
                   key={points}
-                  onClick={() => updateScore(team, points)}
+                  onClick={() => {
+                    updateScore(team, points);
+                    // We'll let the effect handle the sync after state updates
+                  }}
                   className={`px-4 py-3 rounded-lg transition-all ${points < 0 ? 'bg-red-500' : 'bg-[#FF8C00]'} text-white hover:bg-opacity-90`}
                 >
                   {points > 0 ? `+${points}` : points}
@@ -287,7 +441,11 @@ const ScoreBoard = () => {
         <div className="mt-8 flex flex-col items-center gap-4">
           <div className="flex gap-4" >
             <button
-              onClick={() => setScores({ teamA: 0, teamB: 0 })}
+              onClick={() => {
+                setScores({ teamA: 0, teamB: 0 });
+                // Force immediate sync after reset
+                setTimeout(() => syncWithServer(), 0);
+              }}
               className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-opacity-90"
             >
               Reset
@@ -296,6 +454,7 @@ const ScoreBoard = () => {
               onClick={() => {
                 handleConfetti();
                 determineWinner();
+                // Winner will be set in state, triggering the effect for sync
               }}
               className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-opacity-90"
             >
